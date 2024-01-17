@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               },
             )
@@ -49,7 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
               'Night Mode',
               style: TextStyle(fontSize: 18),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Switch(
               activeColor: Colors.tealAccent,
               value: context.watch<SharedData>().isNightMode,
@@ -63,9 +63,10 @@ class _SettingsPageState extends State<SettingsPage> {
         TextButton(
             child: const Text('Contact Us'),
             onPressed: () => {
-                  Navigator.pushReplacement(
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ContactPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const ContactPage()),
                   )
                 })
       ],

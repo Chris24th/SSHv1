@@ -25,6 +25,22 @@ class MyApp extends StatelessWidget {
           brightness: context.watch<SharedData>().isNightMode
               ? Brightness.dark
               : Brightness.light,
+          appBarTheme: AppBarTheme(
+              backgroundColor: Colors.transparent,
+              foregroundColor: context.watch<SharedData>().isNightMode
+                  ? Colors.white
+                  : Colors.black87,
+              elevation: 0),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(fontSize: 17),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 18)),
+          ),
         ),
         home: MyHomePage()
         // LoginPage(),

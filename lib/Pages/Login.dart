@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../MyHomePage.dart';
 import 'Verify.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,9 +17,54 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login Page'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.account_circle,
+                color: context.watch<SharedData>().isNightMode
+                    ? Colors.white70
+                    : Colors.black54,
+                size: 70,
+              ),
+              const SizedBox(width: 15),
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: context.watch<SharedData>().isNightMode
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: 'S',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextSpan(text: 'mart\n'),
+                    TextSpan(
+                      text: 'S',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextSpan(text: 'afety\n'),
+                    TextSpan(
+                      text: 'H',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextSpan(text: 'elmet'),
+                  ],
+                ),
+              )
+            ]),
+        toolbarHeight: 100,
+        // backgroundColor: sharedData.isNightMode ? Colors.teal : Colors.orange,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -26,20 +73,20 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             // Your logo or header here
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Email text field
             TextField(
               decoration: InputDecoration(
                 labelText: 'Phone number',
                 hintText: 'Enter your 11-digit phone number',
-                prefixIcon: Icon(Icons.phone_android),
+                prefixIcon: const Icon(Icons.phone_android),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             GestureDetector(
               onTap: () {
@@ -58,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                       });
                     },
                   ),
-                  Text('Keep me logged in'),
+                  const Text('Keep me logged in'),
                 ],
               ),
             ),
@@ -69,10 +116,10 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => VerifyPage()),
+                  MaterialPageRoute(builder: (context) => const VerifyPage()),
                 );
               },
-              child: Text('Login'),
+              child: const Text('Login'),
             ),
           ],
         ),

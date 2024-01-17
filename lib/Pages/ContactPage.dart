@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../MyHomePage.dart';
-
 class ContactPage extends StatefulWidget {
   const ContactPage({super.key});
 
@@ -19,29 +17,24 @@ class _ContactPageState extends State<ContactPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyHomePage()),
-                    );
-                  },
-                  child: const Icon(Icons.arrow_back_rounded)),
-              Column(
+              BackButton(onPressed: () {
+                Navigator.pop(context);
+              }),
+              const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("Contact Us",
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  const Text("Email: brocode.noreply@gmail.com\n"),
-                  const Text("Mobile no.: 09123456789"),
-                  const SizedBox(height: 50),
+                  SizedBox(height: 20),
+                  Text("Email: brocode.noreply@gmail.com\n"),
+                  Text("Mobile no.: 09123456789"),
+                  SizedBox(height: 50),
                   Text("About Us",
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  const Text(
+                  SizedBox(height: 20),
+                  Text(
                       "We are Team BroCode. Our aim is to enhance construction safety by implementing Smart Safety Helmet. Through this Mobile App, users can monitor the data collected from the sensors integrated to the Smart Safety Helmet.",
                       textAlign: TextAlign.center),
                 ],

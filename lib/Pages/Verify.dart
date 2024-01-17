@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sshv1/Pages/Login.dart';
 
 import '../MyHomePage.dart';
 
@@ -12,31 +13,43 @@ class VerifyPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "We've sent a code to the provided number.",
-              style: TextStyle(fontStyle: FontStyle.italic),
-            ),
-            const SizedBox(height: 30),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Code',
-                hintText: 'Enter the sent code',
-                prefixIcon: Icon(Icons.numbers_rounded),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
+            BackButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()));
               },
-              child: Text('Verify'),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "\nWe've sent a code to the provided number.",
+                  style: TextStyle(fontStyle: FontStyle.italic),
+                ),
+                const SizedBox(height: 30),
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Code',
+                    hintText: 'Enter the code',
+                    prefixIcon: const Icon(Icons.numbers_rounded),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyHomePage()),
+                    );
+                  },
+                  child: const Text('Verify'),
+                ),
+              ],
             ),
           ],
         ),

@@ -19,14 +19,13 @@ class _MyHomePageState extends State<MyHomePage> {
     HomePage(),
     TempPage(),
     SmokePage(),
-    SettingsPage(),
+    const SettingsPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     SharedData sharedData = context.watch<SharedData>();
     return Scaffold(
-      backgroundColor: sharedData.isNightMode ? Colors.black87 : Colors.white,
       appBar: AppBar(
         title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -37,16 +36,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: context.watch<SharedData>().isNightMode
                     ? Colors.white70
                     : Colors.black54,
-                size: 60,
+                size: 70,
               ),
-              SizedBox(width: 15),
+              const SizedBox(width: 15),
               RichText(
                 text: TextSpan(
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 18,
                     color: sharedData.isNightMode ? Colors.white : Colors.black,
                   ),
-                  children: <TextSpan>[
+                  children: const <TextSpan>[
                     TextSpan(
                       text: 'S',
                       style: TextStyle(
@@ -72,10 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               )
             ]),
-        toolbarHeight: 80,
+        toolbarHeight: 100,
         // backgroundColor: sharedData.isNightMode ? Colors.teal : Colors.orange,
-        backgroundColor: Colors.transparent,
-        elevation: 0, // Remove the shadow
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -85,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
             _currentIndex = index;
           });
         },
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             label: 'Home',
@@ -105,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
         backgroundColor: Colors.transparent,
         selectedItemColor:
-            sharedData.isNightMode ? Colors.tealAccent : Colors.orange,
+            sharedData.isNightMode ? Colors.tealAccent : Colors.orangeAccent,
         unselectedItemColor: sharedData.isNightMode
             ? Colors.tealAccent.shade100
             : Colors.orangeAccent.shade100,
