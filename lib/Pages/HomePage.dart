@@ -43,7 +43,7 @@ class HomePage extends StatelessWidget {
                             width: 1,
                           ),
                         ),
-                        child: const Text("TEMPERATURE"),
+                        child: const Text("TEMPERATUR"),
                       ),
                     ),
                     Expanded(
