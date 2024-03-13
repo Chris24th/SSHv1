@@ -13,6 +13,10 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool keepLoggedIn = false;
+  String message = "This is a test message!";
+  // String address = "09274478614";
+  List<String> recipents = ["09274478614"];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,13 +25,19 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                Icons.account_circle,
-                color: context.watch<SharedData>().isNightMode
-                    ? Colors.white70
-                    : Colors.black54,
-                size: 70,
-              ),
+              // Icon(
+              //   Icons.account_circle,
+              //   color: context.watch<SharedData>().isNightMode
+              //       ? Colors.white70
+              //       : Colors.black54,
+              //   size: 70,
+              // ),
+              Image.asset(
+                  context.watch<SharedData>().isNightMode
+                      ? ('assets/ssh_logo_teal.png')
+                      : ('assets/ssh_logo_orange.png'),
+                  width: 70,
+                  height: 70),
               const SizedBox(width: 15),
               RichText(
                 text: TextSpan(
@@ -37,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
                         ? Colors.white
                         : Colors.black,
                   ),
-                  children: <TextSpan>[
+                  children: const <TextSpan>[
                     TextSpan(
                       text: 'S',
                       style: TextStyle(
@@ -111,7 +121,11 @@ class _LoginPageState extends State<LoginPage> {
             ),
 
             SizedBox(height: 20),
-
+            ElevatedButton(
+                onPressed: () {
+                  // FirebaseConfig.signInWithPhone("+639274478614", context);
+                },
+                child: const Text('test sms')),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushReplacement(
