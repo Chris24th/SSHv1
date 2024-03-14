@@ -20,21 +20,19 @@ class _ContactPageState extends State<ContactPage> {
               BackButton(onPressed: () {
                 Navigator.pop(context);
               }),
-              const Column(
+              Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("Contact Us",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  Text("Email: brocode.noreply@gmail.com\n"),
-                  Text("Mobile no.: 09123456789"),
-                  SizedBox(height: 50),
+                      style: Theme.of(context).textTheme.displayLarge),
+                  const SizedBox(height: 20),
+                  const Text("Email: brocode.noreply@gmail.com\n"),
+                  const Text("Mobile no.: 09123456789"),
+                  const SizedBox(height: 50),
                   Text("About Us",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  Text(
+                      style: Theme.of(context).textTheme.displayLarge),
+                  const SizedBox(height: 20),
+                  const Text(
                       "We are Team BroCode. Our aim is to enhance construction safety by implementing Smart Safety Helmet. Through this Mobile App, users can monitor the data collected from the sensors integrated to the Smart Safety Helmet.",
                       textAlign: TextAlign.center),
                 ],

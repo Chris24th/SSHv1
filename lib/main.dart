@@ -25,6 +25,15 @@ class MyApp extends StatelessWidget {
         brightness: context.watch<SharedData>().isNightMode
             ? Brightness.dark
             : Brightness.light,
+        fontFamily: 'Lato',
+        textTheme: TextTheme(
+          displayLarge: TextStyle(
+              fontSize: 20,
+              color: context.watch<SharedData>().isNightMode
+                  ? Colors.tealAccent
+                  : Colors.orange,
+              fontFamily: 'Madimi_One'), // Define a text style for headline1
+        ),
         appBarTheme: AppBarTheme(
             backgroundColor: Colors.transparent,
             foregroundColor: context.watch<SharedData>().isNightMode

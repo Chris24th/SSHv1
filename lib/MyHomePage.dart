@@ -31,20 +31,17 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                Icons.account_circle,
-                color: context.watch<SharedData>().isNightMode
-                    ? Colors.white70
-                    : Colors.black54,
-                size: 70,
+              Image.asset(
+                context.watch<SharedData>().isNightMode
+                    ? 'assets/ssh_logo_teal.png'
+                    : 'assets/ssh_logo_orange.png',
+                width: 70,
+                height: 70,
               ),
               const SizedBox(width: 15),
               RichText(
                 text: TextSpan(
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: sharedData.isNightMode ? Colors.white : Colors.black,
-                  ),
+                  style: Theme.of(context).textTheme.displayLarge,
                   children: const <TextSpan>[
                     TextSpan(
                       text: 'S',
