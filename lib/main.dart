@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'MyHomePage.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
   runApp(
     ChangeNotifierProvider(
       create: (context) => SharedData(),
