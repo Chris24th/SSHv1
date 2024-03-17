@@ -14,11 +14,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
-  final _pages = [
+  final _pages = const [
     HomePage(),
     TempPage(),
     SmokePage(),
-    const SettingsPage(),
+    SettingsPage(),
   ];
 
   @override

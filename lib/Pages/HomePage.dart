@@ -9,7 +9,7 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../MyHomePage.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,6 +19,9 @@ class _HomePageState extends State<HomePage> {
   late Timer _timer;
   late Map<String, dynamic> _responseData = {};
   double _currentTempData = 0;
+  double _currentMq2Data = 0;
+  double _currentMq135Data = 0;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +46,14 @@ class _HomePageState extends State<HomePage> {
                       ['temperature']
                   .split(" ")[0]) ??
               0;
+          _currentMq2Data = double.tryParse(_responseData[latestTimestamp]
+                      ['mq2_gas_level']
+                  .split(" ")[0]) ??
+              0;
+          _currentMq135Data = double.tryParse(_responseData[latestTimestamp]
+                      ['mq135_gas_level']
+                  .split(" ")[0]) ??
+              0;
         });
       }
     } else {
@@ -58,7 +69,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _fetchDataPeriodically() {
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       _fetchData();
     });
   }
@@ -67,18 +78,19 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Material(
       child: Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         width: double.infinity,
         color: Colors.transparent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            //CAMERA
             Expanded(
               flex: 5,
               child: Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.only(bottom: 5),
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(bottom: 5),
                 width: double.maxFinite,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
@@ -100,23 +112,19 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            //TEMP AND GAS
             Expanded(
               flex: 3,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  //TEMP
                   Expanded(
+                    flex: 2,
                     child: Container(
                         height: double.maxFinite,
-                        padding: EdgeInsets.all(10),
-                        margin: EdgeInsets.only(right: 5),
-                        // decoration: BoxDecoration(
-                        //   borderRadius: BorderRadius.circular(10),
-                        //   border: Border.all(
-                        //     color: Colors.grey,
-                        //     width: 1,
-                        //   ),
-                        // ),
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(right: 5),
                         child: Column(
                           children: [
                             Text(
@@ -134,11 +142,17 @@ class _HomePageState extends State<HomePage> {
                                       startValue: 20,
                                       endValue: 40,
                                       gradient: SweepGradient(
-                                        colors: <Color>[
-                                          Colors.orange,
-                                          Colors.deepOrange,
-                                        ],
-                                      ),
+                                          colors: context
+                                                  .watch<SharedData>()
+                                                  .isNightMode
+                                              ? <Color>[
+                                                  Colors.tealAccent,
+                                                  Colors.teal
+                                                ]
+                                              : <Color>[
+                                                  Colors.orange,
+                                                  Colors.deepOrange
+                                                ]),
                                     ),
                                   ],
                                   pointers: <GaugePointer>[
@@ -149,21 +163,32 @@ class _HomePageState extends State<HomePage> {
                                       enableAnimation: true,
                                       animationType: AnimationType.ease,
                                       animationDuration: 1000,
-                                      needleColor: Colors.deepOrange,
-                                      knobStyle: const KnobStyle(
-                                          color: Colors.deepOrange),
+                                      needleColor: context
+                                              .watch<SharedData>()
+                                              .isNightMode
+                                          ? Colors.tealAccent
+                                          : Colors.deepOrange,
+                                      knobStyle: KnobStyle(
+                                          color: context
+                                                  .watch<SharedData>()
+                                                  .isNightMode
+                                              ? Colors.tealAccent
+                                              : Colors.deepOrange),
                                     ),
                                   ],
                                   annotations: <GaugeAnnotation>[
                                     GaugeAnnotation(
                                       widget: Text(
-                                        _currentTempData.toString() + '°C',
+                                        '$_currentTempData°C',
                                         style: TextStyle(
-                                            fontSize: 25,
-                                            fontWeight: FontWeight.bold,
-                                            color: _currentTempData > 35
-                                                ? Colors.deepOrange
-                                                : Colors.orange),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: context
+                                                  .watch<SharedData>()
+                                                  .isNightMode
+                                              ? Colors.tealAccent
+                                              : Colors.deepOrange,
+                                        ),
                                       ),
                                       angle: 90,
                                       positionFactor: 1.2,
@@ -172,42 +197,161 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ],
                             )),
-                            // SizedBox(height: 20),
-                            // Text(
-                            //   '${_responseData.isEmpty ? '-' : _responseData.values.last['temperature']}',
-                            //   style: TextStyle(
-                            //       fontWeight: FontWeight.bold, fontSize: 40),
-                            // ),
                           ],
                         )),
                   ),
+                  //GAS
                   Expanded(
+                    flex: 3,
                     child: Container(
-                      height: double.maxFinite,
-                      padding: EdgeInsets.all(10),
-                      // decoration: BoxDecoration(
-                      //   borderRadius: BorderRadius.circular(10),
-                      //   border: Border.all(
-                      //     color: Colors.grey,
-                      //     width: 1,
-                      //   ),
-                      // ),
-                      child: Column(children: [
-                        Text(
-                          "Gas Levels",
-                          style: Theme.of(context).textTheme.displayLarge,
-                        ),
-                        SizedBox(height: 18),
-                        Text(
-                            'MQ135: ${_responseData.isEmpty ? '-' : _responseData.values.last['mq135_gas_level']}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20)),
-                        Text(
-                            'MQ2: ${_responseData.isEmpty ? '-' : _responseData.values.last['mq2_gas_level']}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20)),
-                      ]),
-                    ),
+                        height: double.maxFinite,
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(right: 5),
+                        child: Column(
+                          children: [
+                            Text(
+                              "Gas Levels",
+                              style: Theme.of(context).textTheme.displayLarge,
+                            ),
+                            Expanded(
+                                child: Row(children: [
+                              //MQ2
+                              Expanded(
+                                  child: SfRadialGauge(
+                                axes: <RadialAxis>[
+                                  RadialAxis(
+                                    minimum: 100,
+                                    maximum: 3000,
+                                    ranges: <GaugeRange>[
+                                      GaugeRange(
+                                        startValue: 100,
+                                        endValue: 3000,
+                                        gradient: SweepGradient(
+                                            colors: context
+                                                    .watch<SharedData>()
+                                                    .isNightMode
+                                                ? <Color>[
+                                                    Colors.tealAccent,
+                                                    Colors.teal
+                                                  ]
+                                                : <Color>[
+                                                    Colors.orange,
+                                                    Colors.deepOrange
+                                                  ]),
+                                      ),
+                                    ],
+                                    pointers: <GaugePointer>[
+                                      NeedlePointer(
+                                        value: _currentMq2Data ?? 0,
+                                        needleStartWidth: 4,
+                                        needleEndWidth: 4,
+                                        enableAnimation: true,
+                                        animationType: AnimationType.ease,
+                                        animationDuration: 1000,
+                                        needleColor: context
+                                                .watch<SharedData>()
+                                                .isNightMode
+                                            ? Colors.tealAccent
+                                            : Colors.deepOrange,
+                                        knobStyle: KnobStyle(
+                                            color: context
+                                                    .watch<SharedData>()
+                                                    .isNightMode
+                                                ? Colors.tealAccent
+                                                : Colors.deepOrange),
+                                      ),
+                                    ],
+                                    annotations: <GaugeAnnotation>[
+                                      GaugeAnnotation(
+                                        widget: Text(
+                                          'MQ-2: $_currentMq2Data',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: context
+                                                    .watch<SharedData>()
+                                                    .isNightMode
+                                                ? Colors.tealAccent
+                                                : Colors.deepOrange,
+                                          ),
+                                        ),
+                                        angle: 90,
+                                        positionFactor: 1.2,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )),
+                              //MQ135
+                              Expanded(
+                                  child: SfRadialGauge(
+                                axes: <RadialAxis>[
+                                  RadialAxis(
+                                    minimum: 1000,
+                                    maximum: 3000,
+                                    ranges: <GaugeRange>[
+                                      GaugeRange(
+                                        startValue: 1000,
+                                        endValue: 3000,
+                                        gradient: SweepGradient(
+                                            colors: context
+                                                    .watch<SharedData>()
+                                                    .isNightMode
+                                                ? <Color>[
+                                                    Colors.tealAccent,
+                                                    Colors.teal
+                                                  ]
+                                                : <Color>[
+                                                    Colors.orange,
+                                                    Colors.deepOrange
+                                                  ]),
+                                      ),
+                                    ],
+                                    pointers: <GaugePointer>[
+                                      NeedlePointer(
+                                        value: _currentMq135Data ?? 0,
+                                        needleStartWidth: 4,
+                                        needleEndWidth: 4,
+                                        enableAnimation: true,
+                                        animationType: AnimationType.ease,
+                                        animationDuration: 1000,
+                                        needleColor: context
+                                                .watch<SharedData>()
+                                                .isNightMode
+                                            ? Colors.tealAccent
+                                            : Colors.deepOrange,
+                                        knobStyle: KnobStyle(
+                                            color: context
+                                                    .watch<SharedData>()
+                                                    .isNightMode
+                                                ? Colors.tealAccent
+                                                : Colors.deepOrange),
+                                      ),
+                                    ],
+                                    annotations: <GaugeAnnotation>[
+                                      GaugeAnnotation(
+                                        widget: Text(
+                                          'MQ-135: $_currentMq135Data',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: context
+                                                    .watch<SharedData>()
+                                                    .isNightMode
+                                                ? Colors.tealAccent
+                                                : Colors.deepOrange,
+                                          ),
+                                        ),
+                                        angle: 90,
+                                        positionFactor: 1.2,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )),
+                            ])),
+                          ],
+                        )),
                   ),
                 ],
               ),

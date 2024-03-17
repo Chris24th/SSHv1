@@ -15,17 +15,10 @@ class TempPage extends StatefulWidget {
   State<TempPage> createState() => _TempPageState();
 }
 
-class _TemperatureData {
-  final DateTime date;
-  final double temperature;
-
-  _TemperatureData(this.date, this.temperature);
-}
-
 class _TempPageState extends State<TempPage> {
   List<String> selectedDates = [];
   late Timer _timer;
-  late List<_TemperatureData> _data = []; // Initialize data variab
+  late List<_TemperatureData> _data = [];
 
   @override
   void initState() {
@@ -100,7 +93,7 @@ class _TempPageState extends State<TempPage> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: context.watch<SharedData>().isNightMode
-                  ? [Colors.tealAccent, Colors.teal]
+                  ? [Colors.teal.shade200, Colors.teal]
                   : [Colors.orangeAccent, Colors.orange],
             ),
             borderRadius: BorderRadius.circular(10),
@@ -124,21 +117,12 @@ class _TempPageState extends State<TempPage> {
               padding: const EdgeInsets.all(20),
               child: SfSparkLineChart.custom(
                 labelStyle: TextStyle(
-                    // fontFamily: 'Madimi_One',
-                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Madimi_One',
                     fontSize: 15,
-                    color: Colors.redAccent,
-                    backgroundColor: context.watch<SharedData>().isNightMode
-                        ? Colors.black
-                        : Colors.white),
-                color:
-                    // context.watch<SharedData>().isNightMode
-                    //     ? Colors.black:
-                    Colors.white,
-                axisLineColor:
-                    // context.watch<SharedData>().isNightMode
-                    //     ? Colors.black:
-                    Colors.white,
+                    color: Colors.deepOrange,
+                    backgroundColor: Colors.white),
+                color: Colors.white,
+                axisLineColor: Colors.white,
                 highPointColor: Colors.red,
                 trackball: const SparkChartTrackball(
                     activationMode: SparkChartActivationMode.tap),
@@ -164,4 +148,11 @@ class _TempPageState extends State<TempPage> {
           ])),
     ));
   }
+}
+
+class _TemperatureData {
+  final DateTime date;
+  final double temperature;
+
+  _TemperatureData(this.date, this.temperature);
 }
