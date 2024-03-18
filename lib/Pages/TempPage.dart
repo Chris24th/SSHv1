@@ -84,10 +84,10 @@ class _TempPageState extends State<TempPage> {
     return Material(
         child: Center(
       child: Container(
-          height: double.maxFinite,
+          height: 330,
           width: double.maxFinite,
-          padding: const EdgeInsets.all(10),
-          margin: const EdgeInsets.all(50),
+          padding: const EdgeInsets.only(top: 20, bottom: 5),
+          margin: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -113,30 +113,35 @@ class _TempPageState extends State<TempPage> {
                         // context.watch<SharedData>().isNightMode
                         //     ? Colors.black:
                         Colors.white)),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SfSparkLineChart.custom(
-                labelStyle: TextStyle(
+            Expanded(
+                child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: SfSparkLineChart.custom(
+                  labelStyle: const TextStyle(
                     fontFamily: 'Madimi_One',
                     fontSize: 15,
                     color: Colors.deepOrange,
-                    backgroundColor: Colors.white),
-                color: Colors.white,
-                axisLineColor: Colors.white,
-                highPointColor: Colors.red,
-                trackball: const SparkChartTrackball(
-                    activationMode: SparkChartActivationMode.tap),
-                marker: const SparkChartMarker(
-                  displayMode: SparkChartMarkerDisplayMode.all,
+                    backgroundColor: Colors.white,
+                  ),
+                  color: Colors.white,
+                  axisLineColor: Colors.white,
+                  highPointColor: Colors.red,
+                  trackball: const SparkChartTrackball(
+                    activationMode: SparkChartActivationMode.tap,
+                  ),
+                  marker: const SparkChartMarker(
+                    displayMode: SparkChartMarkerDisplayMode.all,
+                  ),
+                  labelDisplayMode: SparkChartLabelDisplayMode.high,
+                  xValueMapper: (int index) => _data[index].date.toString(),
+                  yValueMapper: (int index) => _data[index].temperature,
+                  dataCount: _data.length,
                 ),
-                labelDisplayMode: SparkChartLabelDisplayMode.high,
-                xValueMapper: (int index) => _data[index].date.toString(),
-                yValueMapper: (int index) => _data[index].temperature,
-                dataCount: _data.length,
               ),
-            ),
+            )),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: selectedDates.map((time) {
                 return Text(

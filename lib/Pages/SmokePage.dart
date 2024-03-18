@@ -91,8 +91,8 @@ class _SmokePageState extends State<SmokePage> {
             child: Container(
                 height: double.maxFinite,
                 width: double.maxFinite,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.only(left: 20, right: 20, bottom: 5),
+                padding: const EdgeInsets.only(top: 20, bottom: 5),
+                margin: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -163,8 +163,8 @@ class _SmokePageState extends State<SmokePage> {
             child: Container(
                 height: double.maxFinite,
                 width: double.maxFinite,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.only(left: 20, right: 20, bottom: 5),
+                padding: const EdgeInsets.only(top: 20, bottom: 5),
+                margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,

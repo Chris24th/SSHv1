@@ -113,6 +113,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             //TEMP AND GAS
+            const SizedBox(height: 20),
             Expanded(
               flex: 3,
               child: Row(
@@ -123,23 +124,23 @@ class _HomePageState extends State<HomePage> {
                     flex: 2,
                     child: Container(
                         height: double.maxFinite,
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(5),
                         margin: const EdgeInsets.only(right: 5),
                         child: Column(
                           children: [
                             Text(
-                              "Temperature",
+                              "TEMPERATURE",
                               style: Theme.of(context).textTheme.displayLarge,
                             ),
                             Expanded(
                                 child: SfRadialGauge(
                               axes: <RadialAxis>[
                                 RadialAxis(
-                                  minimum: 20,
+                                  minimum: 30,
                                   maximum: 40,
                                   ranges: <GaugeRange>[
                                     GaugeRange(
-                                      startValue: 20,
+                                      startValue: 30,
                                       endValue: 40,
                                       gradient: SweepGradient(
                                           colors: context
@@ -179,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                                   annotations: <GaugeAnnotation>[
                                     GaugeAnnotation(
                                       widget: Text(
-                                        '$_currentTempData°C',
+                                        '$_currentTempData °C',
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -191,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       angle: 90,
-                                      positionFactor: 1.2,
+                                      positionFactor: 1.1,
                                     ),
                                   ],
                                 ),
@@ -205,12 +206,12 @@ class _HomePageState extends State<HomePage> {
                     flex: 3,
                     child: Container(
                         height: double.maxFinite,
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(5),
                         margin: const EdgeInsets.only(right: 5),
                         child: Column(
                           children: [
                             Text(
-                              "Gas Levels",
+                              "GAS LEVELS",
                               style: Theme.of(context).textTheme.displayLarge,
                             ),
                             Expanded(
@@ -264,7 +265,7 @@ class _HomePageState extends State<HomePage> {
                                     annotations: <GaugeAnnotation>[
                                       GaugeAnnotation(
                                         widget: Text(
-                                          'MQ-2: $_currentMq2Data',
+                                          'MQ-2:\n${_currentMq2Data.toInt()}',
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
@@ -274,6 +275,7 @@ class _HomePageState extends State<HomePage> {
                                                 ? Colors.tealAccent
                                                 : Colors.deepOrange,
                                           ),
+                                          textAlign: TextAlign.center,
                                         ),
                                         angle: 90,
                                         positionFactor: 1.2,
@@ -331,7 +333,7 @@ class _HomePageState extends State<HomePage> {
                                     annotations: <GaugeAnnotation>[
                                       GaugeAnnotation(
                                         widget: Text(
-                                          'MQ-135: $_currentMq135Data',
+                                          'MQ-135:\n${_currentMq135Data.toInt()}',
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
@@ -341,6 +343,7 @@ class _HomePageState extends State<HomePage> {
                                                 ? Colors.tealAccent
                                                 : Colors.deepOrange,
                                           ),
+                                          textAlign: TextAlign.center,
                                         ),
                                         angle: 90,
                                         positionFactor: 1.2,
