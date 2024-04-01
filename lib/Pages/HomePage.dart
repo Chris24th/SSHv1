@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_sms/flutter_sms.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -21,11 +22,21 @@ class _HomePageState extends State<HomePage> {
   double _currentTempData = 0;
   double _currentMq2Data = 0;
   double _currentMq135Data = 0;
+  String message = "This is a test message!";
+  List<String> recipents = ["+639274478614", "09274478614"];
 
   @override
   void initState() {
     super.initState();
     _fetchDataPeriodically();
+  }
+
+  void _sendSMS(String message, List<String> recipents) async {
+    String _result = await sendSMS(message: message, recipients: recipents)
+        .catchError((onError) {
+      print(onError);
+    });
+    print(_result);
   }
 
   Future<void> _fetchData() async {
@@ -107,7 +118,10 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       'CAMERA',
                       style: Theme.of(context).textTheme.displayLarge,
-                    )
+                    ),
+                    ElevatedButton(
+                        child: const Text("test sms"),
+                        onPressed: () => _sendSMS)
                   ],
                 ),
               ),

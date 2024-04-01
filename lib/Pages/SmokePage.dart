@@ -51,7 +51,7 @@ class _SmokePageState extends State<SmokePage> {
 
       // Get dates every 7 data points
       selectedDates.clear();
-      for (int i = 0; i < smokeDataList.length; i += 7) {
+      for (int i = 0; i < 49; i += 7) {
         final date = smokeDataList[i].date;
         final String formattedTime = '${date.hour}:${date.minute}';
         selectedDates.add(formattedTime);

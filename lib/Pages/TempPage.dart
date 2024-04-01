@@ -47,9 +47,8 @@ class _TempPageState extends State<TempPage> {
       // Sort the list by date in descending order
       temperatureDataList.sort((a, b) => b.date.compareTo(a.date));
 
-      // Get dates every 7 data points
       selectedDates.clear();
-      for (int i = 0; i < temperatureDataList.length; i += 7) {
+      for (int i = 0; i < 49; i += 7) {
         final date = temperatureDataList[i].date;
         final String formattedTime = '${date.hour}:${date.minute}';
         selectedDates.add(formattedTime);
@@ -57,7 +56,7 @@ class _TempPageState extends State<TempPage> {
 
       return temperatureDataList
           .take(49)
-          .toList(); // Return the latest 10 data points
+          .toList(); // Return the latest data points
     } else {
       throw Exception(
           'Failed to load data. Status Code: ${response.statusCode}');
