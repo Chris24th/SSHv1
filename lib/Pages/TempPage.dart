@@ -19,6 +19,7 @@ class _TempPageState extends State<TempPage> {
   List<String> selectedDates = [];
   late Timer _timer;
   late List<_TemperatureData> _data = [];
+  final String userID = "001";
 
   @override
   void initState() {
@@ -28,27 +29,33 @@ class _TempPageState extends State<TempPage> {
 
   Future<List<_TemperatureData>> fetchTemperatureData() async {
     final response = await http.get(
-      Uri.parse('https://flask-api-mu.vercel.app/get_data'),
+      Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'),
     );
+
     if (response.statusCode == 200 && mounted) {
       Map<String, dynamic> responseData = json.decode(response.body);
       List<_TemperatureData> temperatureDataList = [];
 
-      // Convert JSON data to _TemperatureData objects
-      responseData.forEach((dateStr, data) {
-        DateTime? date = DateTime.tryParse(dateStr.split("+")[0]); // Parse date
-        double temperature =
-            double.tryParse(data['temperature'].split(" ")[0]) ??
-                0; // Parse temperature
-        temperatureDataList
-            .add(_TemperatureData(date as DateTime, temperature));
+      // Get the list of keys (timestamps) from the JSON response, excluding the "user_id" key
+      List<String> timestamps =
+          responseData.keys.where((key) => key != 'user_id').toList();
+
+      // Sort the timestamps in descending order
+      timestamps.sort((a, b) {
+        final dateTimeA = DateTime.parse(a);
+        final dateTimeB = DateTime.parse(b);
+        return dateTimeB.compareTo(dateTimeA);
       });
 
-      // Sort the list by date in descending order
-      temperatureDataList.sort((a, b) => b.date.compareTo(a.date));
+      // Convert JSON data to _TemperatureData objects
+      for (String timestamp in timestamps) {
+        DateTime date = DateTime.parse(timestamp);
+        double temperature = responseData[timestamp]['temperature'];
+        temperatureDataList.add(_TemperatureData(date, temperature));
+      }
 
       selectedDates.clear();
-      for (int i = 0; i < 49; i += 7) {
+      for (int i = 0; i < temperatureDataList.length && i < 49; i += 7) {
         final date = temperatureDataList[i].date;
         final String formattedTime = '${date.hour}:${date.minute}';
         selectedDates.add(formattedTime);

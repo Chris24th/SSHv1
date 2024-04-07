@@ -13,6 +13,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final int mobiNumber = 09274478614;
+
   @override
   Widget build(BuildContext context) {
     SharedData sharedData = context.watch<SharedData>();
@@ -23,12 +25,12 @@ class _SettingsPageState extends State<SettingsPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              '09123456789',
+            Text(
+              mobiNumber.toString(),
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
             TextButton(
-              child: const Text('Logout'),
+              child: const Text('Edit'),
               onPressed: () {
                 Navigator.pushReplacement(
                   context,

@@ -19,6 +19,7 @@ class _SmokePageState extends State<SmokePage> {
   List<String> selectedDates = [];
   late Timer _timer;
   late List<_SmokeData> _data = [];
+  final String userID = "001";
 
   @override
   void initState() {
@@ -28,30 +29,38 @@ class _SmokePageState extends State<SmokePage> {
 
   Future<List<_SmokeData>> fetchSmokeData() async {
     final response = await http.get(
-      Uri.parse('https://flask-api-mu.vercel.app/get_data'),
+      Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'),
     );
+
     if (response.statusCode == 200 && mounted) {
       Map<String, dynamic> responseData = json.decode(response.body);
       List<_SmokeData> smokeDataList = [];
 
-      // Convert JSON data to _SmokeData objects
-      responseData.forEach((dateStr, data) {
-        DateTime? date = DateTime.tryParse(dateStr.split("+")[0]); // Parse date
-        double mq2Level =
-            double.tryParse(data['mq2_gas_level'].split(" ")[0]) ??
-                0; // Parse mq2Level
-        double mq135Level =
-            double.tryParse(data['mq135_gas_level'].split(" ")[0]) ??
-                0; // Parse mq135Level
-        smokeDataList.add(_SmokeData(date as DateTime, mq2Level, mq135Level));
+      // Get the list of keys (timestamps) from the JSON response, excluding the "user_id" key
+      List<String> timestamps =
+          responseData.keys.where((key) => key != 'user_id').toList();
+
+      // Sort the timestamps in descending order
+      timestamps.sort((a, b) {
+        final dateTimeA = DateTime.parse(a);
+        final dateTimeB = DateTime.parse(b);
+        return dateTimeB.compareTo(dateTimeA);
       });
+
+      // Convert JSON data to _SmokeData objects
+      for (String timestamp in timestamps) {
+        DateTime date = DateTime.parse(timestamp);
+        double mq2Value = responseData[timestamp]['mq2_value'];
+        double mq135Value = responseData[timestamp]['mq135_value'];
+        smokeDataList.add(_SmokeData(date, mq2Value, mq135Value));
+      }
 
       // Sort the list by date in descending order
       smokeDataList.sort((a, b) => b.date.compareTo(a.date));
 
       // Get dates every 7 data points
       selectedDates.clear();
-      for (int i = 0; i < 49; i += 7) {
+      for (int i = 0; i < smokeDataList.length && i < 49; i += 7) {
         final date = smokeDataList[i].date;
         final String formattedTime = '${date.hour}:${date.minute}';
         selectedDates.add(formattedTime);
@@ -59,7 +68,7 @@ class _SmokePageState extends State<SmokePage> {
 
       return smokeDataList
           .take(49)
-          .toList(); // Return the latest 10 data points
+          .toList(); // Return the latest 49 data points
     } else {
       throw Exception(
           'Failed to load data. Status Code: ${response.statusCode}');

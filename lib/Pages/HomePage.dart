@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_sms/flutter_sms.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -22,8 +21,7 @@ class _HomePageState extends State<HomePage> {
   double _currentTempData = 0;
   double _currentMq2Data = 0;
   double _currentMq135Data = 0;
-  String message = "This is a test message!";
-  List<String> recipents = ["+639274478614", "09274478614"];
+  final String userID = "001";
 
   @override
   void initState() {
@@ -31,46 +29,64 @@ class _HomePageState extends State<HomePage> {
     _fetchDataPeriodically();
   }
 
-  void _sendSMS(String message, List<String> recipents) async {
-    String _result = await sendSMS(message: message, recipients: recipents)
-        .catchError((onError) {
-      print(onError);
-    });
-    print(_result);
-  }
-
   Future<void> _fetchData() async {
-    final response = await http.get(Uri.parse(
-        'https://flask-api-mu.vercel.app/get_data')); // Replace with your API endpoint
+    final response = await http
+        .get(Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'));
+
     if (response.statusCode == 200 && mounted) {
       setState(() {
         _responseData = json.decode(response.body);
       });
 
-      String latestTimestamp = _responseData.keys.reduce((a, b) {
-        return DateTime.parse(a).isAfter(DateTime.parse(b)) ? a : b;
+      // Check if the "user_id" key exists
+      if (_responseData.containsKey('user_id')) {
+        final userId = _responseData['user_id'];
+        // skip it
+      }
+
+      // Get the list of keys (timestamps) from the JSON response, excluding the "user_id" key
+      List<String> timestamps =
+          _responseData.keys.where((key) => key != 'user_id').toList();
+
+      // Sort the timestamps in descending order
+      timestamps.sort((a, b) {
+        final dateTimeA = DateTime.parse(a);
+        final dateTimeB = DateTime.parse(b);
+        return dateTimeB.compareTo(dateTimeA);
       });
 
+      // Get the latest timestamp
+      String latestTimestamp = timestamps.first;
+
+      // Extract the sensor data using the latest timestamp
       if (_responseData.containsKey(latestTimestamp)) {
+        final sensorData = _responseData[latestTimestamp];
         setState(() {
-          _currentTempData = double.tryParse(_responseData[latestTimestamp]
-                      ['temperature']
-                  .split(" ")[0]) ??
-              0;
-          _currentMq2Data = double.tryParse(_responseData[latestTimestamp]
-                      ['mq2_gas_level']
-                  .split(" ")[0]) ??
-              0;
-          _currentMq135Data = double.tryParse(_responseData[latestTimestamp]
-                      ['mq135_gas_level']
-                  .split(" ")[0]) ??
-              0;
+          _currentTempData = sensorData['temperature'];
+          _currentMq2Data = sensorData['mq2_value'];
+          _currentMq135Data = sensorData['mq135_value'];
         });
+      } else {
+        // Handle the case where the expected keys are not found
+        _currentTempData = 0;
+        _currentMq2Data = 0;
+        _currentMq135Data = 0;
       }
     } else {
       throw Exception(
           'Failed to load data. Status Code: ${response.statusCode}');
     }
+  }
+
+  String? _getLatestTimestamp(Set<String> timestamps) {
+    if (timestamps.isEmpty) {
+      return null;
+    }
+    // Convert timestamps to DateTime objects and find the maximum
+    return timestamps
+        .map((timestamp) => DateTime.parse(timestamp))
+        .reduce((a, b) => a.isAfter(b) ? a : b)
+        .toString();
   }
 
   @override
@@ -119,9 +135,6 @@ class _HomePageState extends State<HomePage> {
                       'CAMERA',
                       style: Theme.of(context).textTheme.displayLarge,
                     ),
-                    ElevatedButton(
-                        child: const Text("test sms"),
-                        onPressed: () => _sendSMS)
                   ],
                 ),
               ),
