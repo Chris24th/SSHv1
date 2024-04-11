@@ -1,8 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 
@@ -16,82 +12,9 @@ class SmokePage extends StatefulWidget {
 }
 
 class _SmokePageState extends State<SmokePage> {
-  List<String> selectedDates = [];
-  late Timer _timer;
-  late List<_SmokeData> _data = [];
-  final String userID = "001";
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchDataPeriodically();
-  }
-
-  Future<List<_SmokeData>> fetchSmokeData() async {
-    final response = await http.get(
-      Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'),
-    );
-
-    if (response.statusCode == 200 && mounted) {
-      Map<String, dynamic> responseData = json.decode(response.body);
-      List<_SmokeData> smokeDataList = [];
-
-      // Get the list of keys (timestamps) from the JSON response, excluding the "user_id" key
-      List<String> timestamps =
-          responseData.keys.where((key) => key != 'user_id').toList();
-
-      // Sort the timestamps in descending order
-      timestamps.sort((a, b) {
-        final dateTimeA = DateTime.parse(a);
-        final dateTimeB = DateTime.parse(b);
-        return dateTimeB.compareTo(dateTimeA);
-      });
-
-      // Convert JSON data to _SmokeData objects
-      for (String timestamp in timestamps) {
-        DateTime date = DateTime.parse(timestamp);
-        double mq2Value = responseData[timestamp]['mq2_value'];
-        double mq135Value = responseData[timestamp]['mq135_value'];
-        smokeDataList.add(_SmokeData(date, mq2Value, mq135Value));
-      }
-
-      // Sort the list by date in descending order
-      smokeDataList.sort((a, b) => b.date.compareTo(a.date));
-
-      // Get dates every 7 data points
-      selectedDates.clear();
-      for (int i = 0; i < smokeDataList.length && i < 49; i += 7) {
-        final date = smokeDataList[i].date;
-        final String formattedTime = '${date.hour}:${date.minute}';
-        selectedDates.add(formattedTime);
-      }
-
-      return smokeDataList
-          .take(49)
-          .toList(); // Return the latest 49 data points
-    } else {
-      throw Exception(
-          'Failed to load data. Status Code: ${response.statusCode}');
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  Future<void> _fetchDataPeriodically() async {
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) async {
-      List<_SmokeData> newData = await fetchSmokeData();
-      setState(() {
-        _data = newData;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    SharedData sharedData = context.watch<SharedData>();
     return Material(
         child: Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -148,9 +71,10 @@ class _SmokePageState extends State<SmokePage> {
                             ),
                             labelDisplayMode: SparkChartLabelDisplayMode.high,
                             xValueMapper: (int index) =>
-                                _data[index].date.toString(),
-                            yValueMapper: (int index) => _data[index].mq2Level,
-                            dataCount: _data.length,
+                                sharedData.smokeDataList[index].date.toString(),
+                            yValueMapper: (int index) =>
+                                sharedData.smokeDataList[index].mq2Level,
+                            dataCount: sharedData.smokeDataList.length,
                           ),
                         ),
                       ),
@@ -158,7 +82,7 @@ class _SmokePageState extends State<SmokePage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: selectedDates.map((time) {
+                      children: sharedData.selectedDates.map((time) {
                         return Text(
                           time,
                           style: const TextStyle(color: Colors.white),
@@ -220,10 +144,10 @@ class _SmokePageState extends State<SmokePage> {
                             ),
                             labelDisplayMode: SparkChartLabelDisplayMode.high,
                             xValueMapper: (int index) =>
-                                _data[index].date.toString(),
+                                sharedData.smokeDataList[index].date.toString(),
                             yValueMapper: (int index) =>
-                                _data[index].mq135Level,
-                            dataCount: _data.length,
+                                sharedData.smokeDataList[index].mq135Level,
+                            dataCount: sharedData.smokeDataList.length,
                           ),
                         ),
                       ),
@@ -231,7 +155,7 @@ class _SmokePageState extends State<SmokePage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: selectedDates.map((time) {
+                      children: sharedData.selectedDates.map((time) {
                         return Text(
                           time,
                           style: const TextStyle(color: Colors.white),
@@ -243,12 +167,4 @@ class _SmokePageState extends State<SmokePage> {
       ]),
     ));
   }
-}
-
-class _SmokeData {
-  final DateTime date;
-  final double mq2Level;
-  final double mq135Level;
-
-  _SmokeData(this.date, this.mq2Level, this.mq135Level);
 }

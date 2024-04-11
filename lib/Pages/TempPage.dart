@@ -1,8 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 
@@ -16,77 +12,9 @@ class TempPage extends StatefulWidget {
 }
 
 class _TempPageState extends State<TempPage> {
-  List<String> selectedDates = [];
-  late Timer _timer;
-  late List<_TemperatureData> _data = [];
-  final String userID = "001";
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchDataPeriodically();
-  }
-
-  Future<List<_TemperatureData>> fetchTemperatureData() async {
-    final response = await http.get(
-      Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'),
-    );
-
-    if (response.statusCode == 200 && mounted) {
-      Map<String, dynamic> responseData = json.decode(response.body);
-      List<_TemperatureData> temperatureDataList = [];
-
-      // Get the list of keys (timestamps) from the JSON response, excluding the "user_id" key
-      List<String> timestamps =
-          responseData.keys.where((key) => key != 'user_id').toList();
-
-      // Sort the timestamps in descending order
-      timestamps.sort((a, b) {
-        final dateTimeA = DateTime.parse(a);
-        final dateTimeB = DateTime.parse(b);
-        return dateTimeB.compareTo(dateTimeA);
-      });
-
-      // Convert JSON data to _TemperatureData objects
-      for (String timestamp in timestamps) {
-        DateTime date = DateTime.parse(timestamp);
-        double temperature = responseData[timestamp]['temperature'];
-        temperatureDataList.add(_TemperatureData(date, temperature));
-      }
-
-      selectedDates.clear();
-      for (int i = 0; i < temperatureDataList.length && i < 49; i += 7) {
-        final date = temperatureDataList[i].date;
-        final String formattedTime = '${date.hour}:${date.minute}';
-        selectedDates.add(formattedTime);
-      }
-
-      return temperatureDataList
-          .take(49)
-          .toList(); // Return the latest data points
-    } else {
-      throw Exception(
-          'Failed to load data. Status Code: ${response.statusCode}');
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  Future<void> _fetchDataPeriodically() async {
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) async {
-      List<_TemperatureData> newData = await fetchTemperatureData();
-      setState(() {
-        _data = newData; // Update the data variable
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    SharedData sharedData = context.watch<SharedData>();
     return Material(
         child: Center(
       child: Container(
@@ -140,16 +68,18 @@ class _TempPageState extends State<TempPage> {
                     displayMode: SparkChartMarkerDisplayMode.all,
                   ),
                   labelDisplayMode: SparkChartLabelDisplayMode.high,
-                  xValueMapper: (int index) => _data[index].date.toString(),
-                  yValueMapper: (int index) => _data[index].temperature,
-                  dataCount: _data.length,
+                  xValueMapper: (int index) =>
+                      sharedData.temperatureDataList[index].date.toString(),
+                  yValueMapper: (int index) =>
+                      sharedData.temperatureDataList[index].temperature,
+                  dataCount: sharedData.temperatureDataList.length,
                 ),
               ),
             )),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: selectedDates.map((time) {
+              children: sharedData.selectedDates.map((time) {
                 return Text(
                   time,
                   style: const TextStyle(color: Colors.white),
@@ -159,11 +89,4 @@ class _TempPageState extends State<TempPage> {
           ])),
     ));
   }
-}
-
-class _TemperatureData {
-  final DateTime date;
-  final double temperature;
-
-  _TemperatureData(this.date, this.temperature);
 }
