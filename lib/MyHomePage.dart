@@ -20,7 +20,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late Timer _timer;
   late Map<String, dynamic> _responseData = {};
   List<String> selectedDates = [];
-  final String userID = "001";
   int _currentIndex = 0;
 
   final _pages = const [
@@ -43,36 +42,49 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _fetchData() async {
     final sharedData = Provider.of<SharedData>(context, listen: false);
     _responseData = sharedData.responseData;
+    final String userID = sharedData.selectedHelmID;
 
     final response = await http
         .get(Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'));
+    final users = await http
+        .get(Uri.parse('https://flask-api-mu.vercel.app/get_all_users'));
 
     if (response.statusCode == 200 && mounted) {
       setState(() {
         context.read<SharedData>().setResponseData(json.decode(response.body));
+        context.read<SharedData>().setUsersData(json.decode(users.body));
       });
+      // print(json.decode(users.body));
+
       List<SmokeData> smokeDataList = [];
       List<TemperatureData> temperatureDataList = [];
       // Get the list of keys (timestamps) from the JSON response, excluding the "user_id" key
-      List<String> timestamps =
-          _responseData.keys.where((key) => key != 'user_id').toList();
+      List<String> timestamps = [];
+
+      _responseData.keys.forEach((key) {
+        if (key.contains(':')) {
+          timestamps.add(key);
+        }
+      });
       // Sort the timestamps in descending order
+
       timestamps.sort((a, b) {
         final dateTimeA = DateTime.parse(a);
         final dateTimeB = DateTime.parse(b);
         return dateTimeB.compareTo(dateTimeA);
       });
-
+      // print(timestamps.first.toString());
       // Get the latest timestamp
       String latestTimestamp = timestamps.first;
 
       // Extract the sensor data using the latest timestamp
       final sensorData = _responseData[latestTimestamp];
-      setState(() {
-        context.read<SharedData>().temperature = sensorData['temperature'];
-        context.read<SharedData>().mq2Value = sensorData['mq2_value'];
-        context.read<SharedData>().mq135Value = sensorData['mq135_value'];
-      });
+      context.read<SharedData>().temperature =
+          sensorData['temperature'].toDouble();
+      context.read<SharedData>().mq2Value = sensorData['mq2_value'];
+      context.read<SharedData>().mq135Value = sensorData['mq135_value'];
+      context.read<SharedData>()._impactDetected =
+          sensorData['impact_detected'];
       //...............TEMPERATURE.............................................................
       // Convert JSON data to _TemperatureData objects
       for (String timestamp in timestamps) {
@@ -91,8 +103,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // Convert JSON data to _SmokeData objects
       for (String timestamp in timestamps) {
         DateTime date = DateTime.parse(timestamp);
-        double mq2Value = _responseData[timestamp]['mq2_value'];
-        double mq135Value = _responseData[timestamp]['mq135_value'];
+        int mq2Value = _responseData[timestamp]['mq2_value'].toInt();
+        int mq135Value = _responseData[timestamp]['mq135_value'].toInt();
         smokeDataList.add(SmokeData(date, mq2Value, mq135Value));
       }
 
@@ -123,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _fetchDataPeriodically() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 100), (Timer timer) {
       _fetchData();
     });
   }
@@ -196,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'Camera',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_fire_department_outlined),
+            icon: Icon(Icons.thermostat),
             label: 'Temperature',
           ),
           BottomNavigationBarItem(
@@ -223,13 +235,17 @@ class _MyHomePageState extends State<MyHomePage> {
 class SharedData with ChangeNotifier {
   bool _isNightMode = false;
   bool _impactDetected = false;
+  bool isOnline = false;
   double _temperature = 0;
-  double _mq2Value = 0;
-  double _mq135Value = 0;
+  int _mq2Value = 0;
+  int _mq135Value = 0;
+  String _selectedHelmID = '001';
+  String _selectedName = 'John Doe';
   List<TemperatureData> _temperatureDataList = [];
   List<SmokeData> _smokeDataList = [];
   List<String> _selectedDates = [];
   Map<String, dynamic> _responseData = {};
+  Map<String, dynamic> _usersData = {};
 
   bool get isNightMode => _isNightMode;
   set isNightMode(bool value) {
@@ -249,15 +265,27 @@ class SharedData with ChangeNotifier {
     notifyListeners();
   }
 
-  double get mq2Value => _mq2Value;
-  set mq2Value(double value) {
+  int get mq2Value => _mq2Value;
+  set mq2Value(int value) {
     _mq2Value = value;
     notifyListeners();
   }
 
-  double get mq135Value => _mq135Value;
-  set mq135Value(double value) {
+  int get mq135Value => _mq135Value;
+  set mq135Value(int value) {
     _mq135Value = value;
+    notifyListeners();
+  }
+
+  String get selectedHelmID => _selectedHelmID;
+  set selectedHelmID(String value) {
+    _selectedHelmID = value;
+    notifyListeners();
+  }
+
+  String get selectedName => _selectedName;
+  set selectedName(String value) {
+    _selectedName = value;
     notifyListeners();
   }
 
@@ -284,6 +312,12 @@ class SharedData with ChangeNotifier {
     _responseData = data;
     notifyListeners();
   }
+
+  Map<String, dynamic> get usersData => _usersData;
+  void setUsersData(Map<String, dynamic> data) {
+    _usersData = data;
+    notifyListeners();
+  }
 }
 
 class TemperatureData {
@@ -295,8 +329,8 @@ class TemperatureData {
 
 class SmokeData {
   final DateTime date;
-  final double mq2Level;
-  final double mq135Level;
+  final int mq2Level;
+  final int mq135Level;
 
   SmokeData(this.date, this.mq2Level, this.mq135Level);
 }

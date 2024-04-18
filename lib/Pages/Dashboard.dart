@@ -12,18 +12,14 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  String selectedHelm = 'John Doe';
-
-  int calculateMq135() {
-    SharedData sharedData = context.watch<SharedData>();
-    double mq135Percent = ((sharedData.mq135Value - 1400) / 3000) * 100;
-    return mq135Percent > 0 ? mq135Percent.toInt() : 0;
+  int calculateMq135(int raw) {
+    double mq135Percent = ((raw - 1400) / 2500) * 100;
+    return mq135Percent > 0.0 ? mq135Percent.toInt() : 0;
   }
 
-  int calculateMq2() {
-    SharedData sharedData = context.watch<SharedData>();
-    double mq2Percent = ((sharedData.mq2Value - 300) / 2000) * 100;
-    return mq2Percent > 0 ? mq2Percent.toInt() : 0;
+  int calculateMq2(int raw) {
+    double mq2Percent = ((raw - 200) / 2000) * 100;
+    return mq2Percent > 0.0 ? mq2Percent.toInt() : 0;
   }
 
   @override
@@ -50,8 +46,8 @@ class _DashboardState extends State<Dashboard> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              "$selectedHelm's Helmet",
-              style: TextStyle(
+              "${sharedData.selectedName}'s Helmet",
+              style: const TextStyle(
                 fontFamily: "Madimi_One",
                 fontSize: 20,
                 color: Colors.white,
@@ -74,7 +70,7 @@ class _DashboardState extends State<Dashboard> {
                         child: Column(children: [
                           Text(
                             "Temperature",
-                            style: Theme.of(context).textTheme.displayLarge,
+                            style: Theme.of(context).textTheme.displayMedium,
                           ),
                           Expanded(
                               flex: 2,
@@ -144,7 +140,7 @@ class _DashboardState extends State<Dashboard> {
                         child: Column(children: [
                           Text(
                             "Air Quality",
-                            style: Theme.of(context).textTheme.displayLarge,
+                            style: Theme.of(context).textTheme.displayMedium,
                           ),
                           Expanded(
                               flex: 2,
@@ -166,7 +162,7 @@ class _DashboardState extends State<Dashboard> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: <Widget>[
                                                 Text(
-                                                    '${calculateMq135().toString()} %',
+                                                    '${calculateMq135(sharedData.mq135Value).toString()} %',
                                                     style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -178,7 +174,9 @@ class _DashboardState extends State<Dashboard> {
                                       ],
                                       pointers: <GaugePointer>[
                                         RangePointer(
-                                          value: calculateMq135().toDouble(),
+                                          value: calculateMq135(
+                                                  sharedData.mq135Value)
+                                              .toDouble(),
                                           width: 15,
                                           pointerOffset: -5,
                                           cornerStyle: CornerStyle.bothCurve,
@@ -192,11 +190,16 @@ class _DashboardState extends State<Dashboard> {
                                                       Colors.orangeAccent,
                                                       Colors.orange
                                                     ],
-                                              stops: <double>[0.25, 0.75]),
+                                              stops: const <double>[
+                                                0.25,
+                                                0.75
+                                              ]),
                                         ),
                                         MarkerPointer(
-                                          value:
-                                              calculateMq135().toDouble() - 3,
+                                          value: calculateMq135(
+                                                      sharedData.mq135Value)
+                                                  .toDouble() -
+                                              3,
                                           color: Colors.white,
                                           markerType: MarkerType.circle,
                                         ),
@@ -215,7 +218,7 @@ class _DashboardState extends State<Dashboard> {
                         child: Column(children: [
                           Text(
                             "Flammable gas",
-                            style: Theme.of(context).textTheme.displayLarge,
+                            style: Theme.of(context).textTheme.displayMedium,
                           ),
                           Expanded(
                               flex: 2,
@@ -237,7 +240,7 @@ class _DashboardState extends State<Dashboard> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: <Widget>[
                                                 Text(
-                                                    '${calculateMq2().toString()} %',
+                                                    '${calculateMq2(sharedData.mq2Value).toString()} %',
                                                     style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -249,7 +252,9 @@ class _DashboardState extends State<Dashboard> {
                                       ],
                                       pointers: <GaugePointer>[
                                         RangePointer(
-                                          value: calculateMq2().toDouble(),
+                                          value:
+                                              calculateMq2(sharedData.mq2Value)
+                                                  .toDouble(),
                                           width: 15,
                                           pointerOffset: -5,
                                           cornerStyle: CornerStyle.bothCurve,
@@ -263,10 +268,16 @@ class _DashboardState extends State<Dashboard> {
                                                       Colors.orangeAccent,
                                                       Colors.orange
                                                     ],
-                                              stops: <double>[0.25, 0.75]),
+                                              stops: const <double>[
+                                                0.25,
+                                                0.75
+                                              ]),
                                         ),
                                         MarkerPointer(
-                                          value: calculateMq2().toDouble() - 3,
+                                          value:
+                                              calculateMq2(sharedData.mq2Value)
+                                                      .toDouble() -
+                                                  3,
                                           color: Colors.white,
                                           markerType: MarkerType.circle,
                                         ),
@@ -278,55 +289,85 @@ class _DashboardState extends State<Dashboard> {
                 ],
               )),
           Column(
-            children: [
-              Container(
-                  child: Text('Registered Helmets:',
-                      style: Theme.of(context).textTheme.displayLarge)),
-              const SizedBox(height: 15),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                Text('Name'),
-                Text('Online status'),
-                Text('Temperature'),
-                Text('Air Quality'),
-                Text('Flammable gas'),
-                Text('Impact'),
-              ]),
-              const SizedBox(height: 15),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                Text('Name'),
-                Text('Online status'),
-                Text('Temperature'),
-                Text('Air Quality'),
-                Text('Flammable gas'),
-                Text('Impact'),
-              ]),
-              const SizedBox(height: 15),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                Text('Name'),
-                Text('Online status'),
-                Text('Temperature'),
-                Text('Air Quality'),
-                Text('Flammable gas'),
-                Text('Impact'),
-              ]),
-              const SizedBox(height: 15),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                Text('Name'),
-                Text('Online status'),
-                Text('Temperature'),
-                Text('Air Quality'),
-                Text('Flammable gas'),
-                Text('Impact'),
-              ]),
-              const SizedBox(height: 15),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                Text('Name'),
-                Text('Online status'),
-                Text('Temperature'),
-                Text('Air Quality'),
-                Text('Flammable gas'),
-                Text('Impact'),
-              ])
+            children: <Widget>[
+              Text(
+                'Available Helmets:',
+                style: Theme.of(context).textTheme.displayLarge,
+              ),
+              const SizedBox(height: 10),
+              // Loop over the map entries and create a widget for each entry
+              ...sharedData.usersData.entries.map((entry) {
+                String key = entry.key;
+                Map<String, dynamic> value = entry.value;
+                return ListTile(
+                  tileColor: sharedData.selectedHelmID == key
+                      ? !sharedData.isNightMode
+                          ? Colors.orange.shade100
+                          : Colors.teal.shade900
+                      : null,
+                  title: Row(children: [
+                    Text('${value['name']}',
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 20),
+                    TextButton(
+                        child: Text(
+                            sharedData.selectedHelmID == key
+                                ? 'Selected'
+                                : 'Select',
+                            style: const TextStyle(
+                                fontFamily: 'MadimiOne',
+                                fontSize: 18,
+                                fontStyle: FontStyle.italic,
+                                decoration: TextDecoration.underline)),
+                        onPressed: () => setState(() {
+                              sharedData.selectedName = '${value['name']}';
+                              sharedData.selectedHelmID = key;
+                              sharedData.temperature = value['temperature'];
+                              sharedData.mq135Value = value['mq135_value'];
+                              sharedData.mq2Value = value['mq2_value'];
+                            }))
+                  ]),
+                  subtitle: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Icon(Icons.thermostat,
+                          color: value['temperature'] < 35
+                              ? (sharedData.isNightMode
+                                  ? Colors.tealAccent
+                                  : Colors.orange)
+                              : Colors.red),
+                      Text(': ${value['temperature']}'),
+                      const SizedBox(width: 10),
+                      Icon(Icons.air,
+                          color: calculateMq135(value['mq135_value']) < 50
+                              ? (sharedData.isNightMode
+                                  ? Colors.tealAccent
+                                  : Colors.orange)
+                              : Colors.red),
+                      Text(': ${calculateMq135(value['mq135_value'])}%'),
+                      const SizedBox(width: 10),
+                      Icon(Icons.local_fire_department_outlined,
+                          color: calculateMq2(value['mq2_value']) < 50
+                              ? (sharedData.isNightMode
+                                  ? Colors.tealAccent
+                                  : Colors.orange)
+                              : Colors.red),
+                      Text(': ${calculateMq2(value['mq2_value'])}%'),
+                      const SizedBox(width: 10),
+                      Icon(Icons.broken_image_outlined,
+                          color: value['impact_detected'] == false
+                              ? (sharedData.isNightMode
+                                  ? Colors.tealAccent
+                                  : Colors.orange)
+                              : Colors.red),
+                      Text(value['impact_detected'] == true
+                          ? ': IMPACT/FALL!!'
+                          : ': No impact/fall'),
+                    ],
+                  ),
+                );
+              }).toList(),
             ],
           )
           // const SizedBox(height: 15)

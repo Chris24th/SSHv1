@@ -27,7 +27,7 @@ class _TempPageState extends State<TempPage> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: context.watch<SharedData>().isNightMode
-                  ? [Colors.teal.shade200, Colors.teal]
+                  ? [Colors.teal.shade300, Colors.teal]
                   : [Colors.orangeAccent, Colors.orange],
             ),
             borderRadius: BorderRadius.circular(10),
@@ -48,34 +48,31 @@ class _TempPageState extends State<TempPage> {
                         //     ? Colors.black:
                         Colors.white)),
             Expanded(
-                child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: SfSparkLineChart.custom(
-                  labelStyle: const TextStyle(
-                    fontFamily: 'Madimi_One',
-                    fontSize: 15,
-                    color: Colors.deepOrange,
-                    backgroundColor: Colors.white,
-                  ),
-                  color: Colors.white,
-                  axisLineColor: Colors.white,
-                  highPointColor: Colors.red,
-                  trackball: const SparkChartTrackball(
-                    activationMode: SparkChartActivationMode.tap,
-                  ),
-                  marker: const SparkChartMarker(
-                    displayMode: SparkChartMarkerDisplayMode.all,
-                  ),
-                  labelDisplayMode: SparkChartLabelDisplayMode.high,
-                  xValueMapper: (int index) =>
-                      sharedData.temperatureDataList[index].date.toString(),
-                  yValueMapper: (int index) =>
-                      sharedData.temperatureDataList[index].temperature,
-                  dataCount: sharedData.temperatureDataList.length,
-                ),
-              ),
-            )),
+                child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: SfSparkLineChart.custom(
+                      labelStyle: const TextStyle(
+                        fontFamily: 'Madimi_One',
+                        fontSize: 15,
+                        color: Colors.deepOrange,
+                        backgroundColor: Colors.white,
+                      ),
+                      color: Colors.white,
+                      axisLineColor: Colors.white,
+                      highPointColor: Colors.red,
+                      trackball: const SparkChartTrackball(
+                        activationMode: SparkChartActivationMode.tap,
+                      ),
+                      marker: const SparkChartMarker(
+                        displayMode: SparkChartMarkerDisplayMode.all,
+                      ),
+                      labelDisplayMode: SparkChartLabelDisplayMode.high,
+                      xValueMapper: (int index) =>
+                          sharedData.temperatureDataList[index].date.toString(),
+                      yValueMapper: (int index) =>
+                          sharedData.temperatureDataList[index].temperature,
+                      dataCount: sharedData.temperatureDataList.length,
+                    ))),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

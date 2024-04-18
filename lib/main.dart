@@ -33,7 +33,13 @@ class MyApp extends StatelessWidget {
               color: context.watch<SharedData>().isNightMode
                   ? Colors.tealAccent
                   : Colors.orange,
-              fontFamily: 'Madimi_One'), // Define a text style for headline1
+              fontFamily: 'Madimi_One'),
+          displayMedium: TextStyle(
+              fontSize: 17,
+              color: context.watch<SharedData>().isNightMode
+                  ? Colors.tealAccent
+                  : Colors.orange,
+              fontFamily: 'Madimi_One'),
         ),
         appBarTheme: AppBarTheme(
             backgroundColor: Colors.transparent,

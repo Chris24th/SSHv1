@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import './ContactPage.dart';
-import './Login.dart';
 import '../MyHomePage.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -13,7 +12,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final int mobiNumber = 09274478614;
+  String mobiNumber = '09274478614';
+  bool isEditing = false;
+  bool isValidNumber = true;
 
   @override
   Widget build(BuildContext context) {
@@ -25,19 +26,38 @@ class _SettingsPageState extends State<SettingsPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              mobiNumber.toString(),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
+            isEditing
+                ? SizedBox(
+                    width: 150,
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          mobiNumber = value;
+                          isValidNumber = _validateMobileNumber(value);
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Enter mobile number',
+                        errorText:
+                            isValidNumber ? null : 'Invalid mobile number',
+                      ),
+                    ),
+                  )
+                : Text(
+                    mobiNumber,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
             TextButton(
-              child: const Text('Edit'),
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-              },
-            )
+              onPressed: isValidNumber
+                  ? () {
+                      setState(() {
+                        isEditing ? isEditing = false : isEditing = true;
+                      });
+                    }
+                  : null,
+              child: isEditing ? const Text('Save') : const Text('Edit'),
+            ),
           ],
         ),
         const SizedBox(height: 50),
@@ -73,5 +93,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 })
       ],
     ));
+  }
+
+  bool _validateMobileNumber(String value) {
+    // Regular expression pattern to validate 11-digit number
+    final pattern = r'^[0-9]{11}$';
+    final regExp = RegExp(pattern);
+    return regExp.hasMatch(value);
   }
 }
