@@ -116,12 +116,14 @@ class _MyHomePageState extends State<MyHomePage> {
       //     .toList(); // Return the latest 49 data points
 
       //.....................END SMOKE..................................................
-      context.read<SharedData>().setTemperatureDataList(temperatureDataList);
-      context.read<SharedData>().setSmokeDataList(smokeDataList);
+      context
+          .read<SharedData>()
+          .setTemperatureDataList(temperatureDataList.take(50).toList());
+      context
+          .read<SharedData>()
+          .setSmokeDataList(smokeDataList.take(50).toList());
       context.read<SharedData>().setSelectedDates(selectedDates);
-      // return temperatureDataList
-      //     .take(49)
-      //     .toList(); // Return the latest data points
+      showCustomToast();
     } else {
       throw Exception(
           'Failed to load data. Status Code: ${response.statusCode}');
@@ -135,8 +137,83 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _fetchDataPeriodically() {
-    _timer = Timer.periodic(const Duration(seconds: 100), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 10), (Timer timer) {
       _fetchData();
+      showCustomToast();
+    });
+  }
+
+  int calculateMq135(int raw) {
+    double mq135Percent = ((raw - 300) / 3000) * 100;
+    return mq135Percent > 0.0 ? mq135Percent.toInt() : 0;
+  }
+
+  int calculateMq2(int raw) {
+    double mq2Percent = ((raw + 100) / 2000) * 100;
+    return mq2Percent > 0.0 ? mq2Percent.toInt() : 0;
+  }
+
+  void showCustomToast() {
+    final sharedData = Provider.of<SharedData>(context, listen: false);
+    final usersData = sharedData.usersData;
+
+    List<String> alertsForUser = [];
+
+    usersData.forEach((userId, userData) {
+      bool hasAlert = false;
+
+      if (userData['impact_detected'] == true) {
+        alertsForUser.add('Impact/fall detected');
+        hasAlert = true;
+      }
+
+      double temperature = userData['temperature'];
+      if (temperature > 36) {
+        alertsForUser.add('High temperature: $temperature');
+        hasAlert = true;
+      }
+
+      double mq135Value = userData['mq135_value'];
+      if (mq135Value > 1800) {
+        alertsForUser
+            .add('Bad Air Quality: ${calculateMq135(mq135Value.toInt())}%');
+        hasAlert = true;
+      }
+
+      double mq2Value = userData['mq2_value'];
+      if (mq2Value > 900) {
+        alertsForUser.add('Flammable Gas: ${calculateMq2(mq2Value.toInt())}%');
+        hasAlert = true;
+      }
+
+      if (hasAlert) {
+        final userName = userData['name'];
+        final alertsMessage = alertsForUser.join('\n');
+        final snackBar = SnackBar(
+          content: Text(
+            '$userName: $alertsMessage',
+            style: TextStyle(
+                fontFamily: 'Lato',
+                color: sharedData.isNightMode ? Colors.white : Colors.black),
+          ),
+          duration: const Duration(seconds: 30),
+          backgroundColor: sharedData.isNightMode
+              ? Colors.teal.shade900
+              : Colors.orange.shade100,
+          action: SnackBarAction(
+            label: 'See info',
+            onPressed: () {
+              sharedData.selectedHelmID = userId;
+              sharedData.selectedName = userName;
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => MyHomePage()));
+            },
+            textColor: sharedData.isNightMode ? Colors.white : Colors.black,
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        alertsForUser.clear();
+      }
     });
   }
 

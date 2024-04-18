@@ -13,14 +13,75 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int calculateMq135(int raw) {
-    double mq135Percent = ((raw - 1400) / 2500) * 100;
+    double mq135Percent = ((raw - 300) / 3000) * 100;
     return mq135Percent > 0.0 ? mq135Percent.toInt() : 0;
   }
 
   int calculateMq2(int raw) {
-    double mq2Percent = ((raw - 200) / 2000) * 100;
+    double mq2Percent = ((raw + 100) / 2000) * 100;
     return mq2Percent > 0.0 ? mq2Percent.toInt() : 0;
   }
+
+  // void showCustomToast(String message) {
+  //   final sharedData = Provider.of<SharedData>(context, listen: false);
+  //   final usersData = sharedData.usersData;
+  //
+  //   List<String> alertsForUser = [];
+  //
+  //   usersData.forEach((userId, userData) {
+  //     bool hasAlert = false;
+  //
+  //     if (userData['impact_detected'] == true) {
+  //       alertsForUser.add('Impact/fall detected');
+  //       hasAlert = true;
+  //     }
+  //
+  //     double temperature = userData['temperature'];
+  //     if (temperature > 36) {
+  //       alertsForUser.add('High temperature: $temperature');
+  //       hasAlert = true;
+  //     }
+  //
+  //     double mq135Value = userData['mq135_value'];
+  //     if (mq135Value > 1800) {
+  //       alertsForUser
+  //           .add('Bad Air Quality: ${calculateMq135(mq135Value.toInt())}%');
+  //       hasAlert = true;
+  //     }
+  //
+  //     double mq2Value = userData['mq2_value'];
+  //     if (mq2Value > 900) {
+  //       alertsForUser.add('Flammable Gas: ${calculateMq2(mq2Value.toInt())}%');
+  //       hasAlert = true;
+  //     }
+  //
+  //     if (hasAlert) {
+  //       final userName = userData['name'];
+  //       final alertsMessage = alertsForUser.join('\n');
+  //       final snackBar = SnackBar(
+  //         content: Text(
+  //           '$userName: $alertsMessage',
+  //           style: TextStyle(fontFamily: 'Lato'),
+  //         ),
+  //         duration: const Duration(seconds: 60),
+  //         backgroundColor:
+  //             sharedData.isNightMode ? Colors.teal : Colors.orangeAccent,
+  //         action: SnackBarAction(
+  //           label: 'See info',
+  //           onPressed: () {
+  //             sharedData.selectedHelmID = userId;
+  //             sharedData.selectedName = userName;
+  //             Navigator.push(context,
+  //                 MaterialPageRoute(builder: (context) => MyHomePage()));
+  //           },
+  //           textColor: Colors.white,
+  //         ),
+  //       );
+  //       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  //       alertsForUser.clear();
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
