@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
@@ -12,86 +15,45 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  int calculateMq135(int raw) {
-    double mq135Percent = ((raw - 300) / 3000) * 100;
-    return mq135Percent > 0.0 ? mq135Percent.toInt() : 0;
+  TextEditingController _textEditingController = TextEditingController();
+  int _editingIndex = -1;
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
   }
 
-  int calculateMq2(int raw) {
-    double mq2Percent = ((raw + 100) / 2000) * 100;
-    return mq2Percent > 0.0 ? mq2Percent.toInt() : 0;
-  }
+  Future<void> updateName(String documentId, String newName) async {
+    final String apiUrl =
+        'https://flask-api-mu.vercel.app/update_name/$documentId';
 
-  // void showCustomToast(String message) {
-  //   final sharedData = Provider.of<SharedData>(context, listen: false);
-  //   final usersData = sharedData.usersData;
-  //
-  //   List<String> alertsForUser = [];
-  //
-  //   usersData.forEach((userId, userData) {
-  //     bool hasAlert = false;
-  //
-  //     if (userData['impact_detected'] == true) {
-  //       alertsForUser.add('Impact/fall detected');
-  //       hasAlert = true;
-  //     }
-  //
-  //     double temperature = userData['temperature'];
-  //     if (temperature > 36) {
-  //       alertsForUser.add('High temperature: $temperature');
-  //       hasAlert = true;
-  //     }
-  //
-  //     double mq135Value = userData['mq135_value'];
-  //     if (mq135Value > 1800) {
-  //       alertsForUser
-  //           .add('Bad Air Quality: ${calculateMq135(mq135Value.toInt())}%');
-  //       hasAlert = true;
-  //     }
-  //
-  //     double mq2Value = userData['mq2_value'];
-  //     if (mq2Value > 900) {
-  //       alertsForUser.add('Flammable Gas: ${calculateMq2(mq2Value.toInt())}%');
-  //       hasAlert = true;
-  //     }
-  //
-  //     if (hasAlert) {
-  //       final userName = userData['name'];
-  //       final alertsMessage = alertsForUser.join('\n');
-  //       final snackBar = SnackBar(
-  //         content: Text(
-  //           '$userName: $alertsMessage',
-  //           style: TextStyle(fontFamily: 'Lato'),
-  //         ),
-  //         duration: const Duration(seconds: 60),
-  //         backgroundColor:
-  //             sharedData.isNightMode ? Colors.teal : Colors.orangeAccent,
-  //         action: SnackBarAction(
-  //           label: 'See info',
-  //           onPressed: () {
-  //             sharedData.selectedHelmID = userId;
-  //             sharedData.selectedName = userName;
-  //             Navigator.push(context,
-  //                 MaterialPageRoute(builder: (context) => MyHomePage()));
-  //           },
-  //           textColor: Colors.white,
-  //         ),
-  //       );
-  //       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  //       alertsForUser.clear();
-  //     }
-  //   });
-  // }
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'name': newName,
+        }),
+      );
+    } catch (e) {
+      print('Exception caught: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     SharedData sharedData = context.watch<SharedData>();
+
     return Material(
         child: Center(
             child: ListView(
                 // crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
           Container(
+            height: 45,
             padding: const EdgeInsets.all(5),
             margin:
                 const EdgeInsets.only(top: 10, bottom: 5, left: 50, right: 50),
@@ -107,7 +69,9 @@ class _DashboardState extends State<Dashboard> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              "${sharedData.selectedName}'s Helmet",
+              sharedData.selectedName == ''
+                  ? 'No Helmet Selected'
+                  : "${sharedData.selectedName}'s Helmet",
               style: const TextStyle(
                 fontFamily: "Madimi_One",
                 fontSize: 20,
@@ -142,6 +106,7 @@ class _DashboardState extends State<Dashboard> {
                                       showLabels: false,
                                       showTicks: false,
                                       radiusFactor: 0.8,
+                                      minimum: 20,
                                       maximum: 50,
                                       axisLineStyle: const AxisLineStyle(
                                           cornerStyle: CornerStyle.startCurve,
@@ -153,13 +118,13 @@ class _DashboardState extends State<Dashboard> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: <Widget>[
                                                 Text(
-                                                    '${sharedData.temperature.toString()} °C',
+                                                    '${sharedData.temperature.toString()}°C',
                                                     style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         fontStyle:
                                                             FontStyle.italic,
-                                                        fontSize: 25)),
+                                                        fontSize: 23)),
                                               ],
                                             )),
                                       ],
@@ -172,8 +137,8 @@ class _DashboardState extends State<Dashboard> {
                                           gradient: SweepGradient(
                                               colors: sharedData.isNightMode
                                                   ? <Color>[
-                                                      Colors.tealAccent,
-                                                      Colors.teal
+                                                      Colors.teal,
+                                                      Colors.tealAccent
                                                     ]
                                                   : <Color>[
                                                       Colors.orangeAccent,
@@ -223,7 +188,7 @@ class _DashboardState extends State<Dashboard> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: <Widget>[
                                                 Text(
-                                                    '${calculateMq135(sharedData.mq135Value).toString()} %',
+                                                    '${sharedData.mq135Value.toString()} %',
                                                     style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -235,17 +200,15 @@ class _DashboardState extends State<Dashboard> {
                                       ],
                                       pointers: <GaugePointer>[
                                         RangePointer(
-                                          value: calculateMq135(
-                                                  sharedData.mq135Value)
-                                              .toDouble(),
+                                          value: sharedData.mq135Value,
                                           width: 15,
                                           pointerOffset: -5,
                                           cornerStyle: CornerStyle.bothCurve,
                                           gradient: SweepGradient(
                                               colors: sharedData.isNightMode
                                                   ? <Color>[
-                                                      Colors.tealAccent,
-                                                      Colors.teal
+                                                      Colors.teal,
+                                                      Colors.tealAccent
                                                     ]
                                                   : <Color>[
                                                       Colors.orangeAccent,
@@ -257,10 +220,7 @@ class _DashboardState extends State<Dashboard> {
                                               ]),
                                         ),
                                         MarkerPointer(
-                                          value: calculateMq135(
-                                                      sharedData.mq135Value)
-                                                  .toDouble() -
-                                              3,
+                                          value: sharedData.mq135Value - 3,
                                           color: Colors.white,
                                           markerType: MarkerType.circle,
                                         ),
@@ -301,7 +261,7 @@ class _DashboardState extends State<Dashboard> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: <Widget>[
                                                 Text(
-                                                    '${calculateMq2(sharedData.mq2Value).toString()} %',
+                                                    '${sharedData.mq2Value.toString()} %',
                                                     style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -313,17 +273,15 @@ class _DashboardState extends State<Dashboard> {
                                       ],
                                       pointers: <GaugePointer>[
                                         RangePointer(
-                                          value:
-                                              calculateMq2(sharedData.mq2Value)
-                                                  .toDouble(),
+                                          value: sharedData.mq2Value,
                                           width: 15,
                                           pointerOffset: -5,
                                           cornerStyle: CornerStyle.bothCurve,
                                           gradient: SweepGradient(
                                               colors: sharedData.isNightMode
                                                   ? <Color>[
-                                                      Colors.tealAccent,
-                                                      Colors.teal
+                                                      Colors.teal,
+                                                      Colors.tealAccent
                                                     ]
                                                   : <Color>[
                                                       Colors.orangeAccent,
@@ -335,10 +293,7 @@ class _DashboardState extends State<Dashboard> {
                                               ]),
                                         ),
                                         MarkerPointer(
-                                          value:
-                                              calculateMq2(sharedData.mq2Value)
-                                                      .toDouble() -
-                                                  3,
+                                          value: sharedData.mq2Value - 3,
                                           color: Colors.white,
                                           markerType: MarkerType.circle,
                                         ),
@@ -356,82 +311,174 @@ class _DashboardState extends State<Dashboard> {
                 style: Theme.of(context).textTheme.displayLarge,
               ),
               const SizedBox(height: 10),
-              // Loop over the map entries and create a widget for each entry
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(Icons.thermostat,
+                    color: sharedData.isNightMode
+                        ? Colors.tealAccent
+                        : Colors.orange),
+                const Text(': Temperature'),
+                const SizedBox(width: 35),
+                Icon(Icons.air,
+                    color: sharedData.isNightMode
+                        ? Colors.tealAccent
+                        : Colors.orange),
+                const Text(': Bad Air Quality'),
+              ]),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(Icons.local_fire_department_outlined,
+                    color: sharedData.isNightMode
+                        ? Colors.tealAccent
+                        : Colors.orange),
+                const Text(': Flammable gas'),
+                const SizedBox(width: 25),
+                Icon(Icons.healing_rounded,
+                    color: sharedData.isNightMode
+                        ? Colors.tealAccent
+                        : Colors.orange),
+                const Text(': Fall/Impact')
+              ]),
+              const SizedBox(height: 10),
+              // Loop over the map entries and create a widget for each entry...sharedData.usersData.entries.map((entry) {
+
+//--------------------------------------------------------------------------------------------------
+
               ...sharedData.usersData.entries.map((entry) {
                 String key = entry.key;
+                int index = int.parse(key);
                 Map<String, dynamic> value = entry.value;
-                return ListTile(
-                  tileColor: sharedData.selectedHelmID == key
-                      ? !sharedData.isNightMode
-                          ? Colors.orange.shade100
-                          : Colors.teal.shade900
-                      : null,
-                  title: Row(children: [
-                    Text('${value['name']}',
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(width: 20),
-                    TextButton(
-                        child: Text(
-                            sharedData.selectedHelmID == key
-                                ? 'Selected'
-                                : 'Select',
-                            style: const TextStyle(
-                                fontFamily: 'MadimiOne',
-                                fontSize: 18,
-                                fontStyle: FontStyle.italic,
-                                decoration: TextDecoration.underline)),
-                        onPressed: () => setState(() {
-                              sharedData.selectedName = '${value['name']}';
-                              sharedData.selectedHelmID = key;
-                              sharedData.temperature = value['temperature'];
-                              sharedData.mq135Value = value['mq135_value'];
-                              sharedData.mq2Value = value['mq2_value'];
-                            }))
-                  ]),
-                  subtitle: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Icon(Icons.thermostat,
-                          color: value['temperature'] < 35
-                              ? (sharedData.isNightMode
-                                  ? Colors.tealAccent
-                                  : Colors.orange)
-                              : Colors.red),
-                      Text(': ${value['temperature']}'),
-                      const SizedBox(width: 10),
-                      Icon(Icons.air,
-                          color: calculateMq135(value['mq135_value']) < 50
-                              ? (sharedData.isNightMode
-                                  ? Colors.tealAccent
-                                  : Colors.orange)
-                              : Colors.red),
-                      Text(': ${calculateMq135(value['mq135_value'])}%'),
-                      const SizedBox(width: 10),
-                      Icon(Icons.local_fire_department_outlined,
-                          color: calculateMq2(value['mq2_value']) < 50
-                              ? (sharedData.isNightMode
-                                  ? Colors.tealAccent
-                                  : Colors.orange)
-                              : Colors.red),
-                      Text(': ${calculateMq2(value['mq2_value'])}%'),
-                      const SizedBox(width: 10),
-                      Icon(Icons.broken_image_outlined,
-                          color: value['impact_detected'] == false
-                              ? (sharedData.isNightMode
-                                  ? Colors.tealAccent
-                                  : Colors.orange)
-                              : Colors.red),
-                      Text(value['impact_detected'] == true
-                          ? ': IMPACT/FALL!!'
-                          : ': No impact/fall'),
-                    ],
-                  ),
-                );
+                //---------------------------------------
+                String input = value['lastUpdated'];
+                List<String> chunks = [];
+                int startIndex = 0;
+                while (startIndex < input.length) {
+                  int endIndex = startIndex + 23;
+                  if (endIndex > input.length) {
+                    endIndex = input.length;
+                  }
+                  chunks.add(input.substring(startIndex, endIndex));
+                  startIndex = endIndex;
+                }
+                //---------------------------------------
+                DateTime lastUpdatedDateTime = DateTime.parse(chunks.first);
+// Get the current datetime and subtract one minute
+                DateTime oneMinuteAgo =
+                    DateTime.now().subtract(const Duration(minutes: 1));
+// Compare the two dates
+                bool isActive = lastUpdatedDateTime.isAfter(oneMinuteAgo);
+                if (isActive) {
+                  return ListTile(
+                    tileColor: sharedData.selectedHelmID == key
+                        ? !sharedData.isNightMode
+                            ? Colors.orange.shade100
+                            : Colors.teal.shade900
+                        : null,
+                    title: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _editingIndex == index
+                                ? TextField(
+                                    controller: _textEditingController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter name',
+                                    ),
+                                  )
+                                : Text(
+                                    '${value['name']}',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                          const SizedBox(width: 20),
+                          IconButton(
+                            icon: _editingIndex == index
+                                ? Icon(Icons.save)
+                                : Icon(Icons.edit),
+                            onPressed: () {
+                              setState(() {
+                                _editingIndex =
+                                    _editingIndex == index ? -1 : index;
+                                if (_editingIndex == index) {
+                                  _textEditingController.text =
+                                      '${value['name']}';
+                                }
+                              });
+                              updateName(key, _textEditingController.text);
+                            },
+                          ),
+                          const SizedBox(width: 20),
+                          TextButton(
+                              child: Text(
+                                  sharedData.selectedHelmID == key
+                                      ? 'Selected'
+                                      : 'Select',
+                                  style: const TextStyle(
+                                      fontFamily: 'MadimiOne',
+                                      fontSize: 18,
+                                      fontStyle: FontStyle.italic,
+                                      decoration: TextDecoration.underline)),
+                              onPressed: () => setState(() {
+                                    sharedData.selectedName =
+                                        '${value['name']}';
+                                    sharedData.selectedHelmID = key;
+                                    sharedData.temperature =
+                                        value['temperature'];
+                                    sharedData.mq135Value =
+                                        value['mq135_value'];
+                                    sharedData.mq2Value = value['mq2_value'];
+                                  }))
+                        ]),
+                    subtitle: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Icon(Icons.thermostat,
+                            color: value['temperature'] < 40
+                                ? (sharedData.isNightMode
+                                    ? Colors.tealAccent
+                                    : Colors.orange)
+                                : Colors.red),
+                        Text(': ${value['temperature']}'),
+                        const SizedBox(width: 10),
+                        Icon(Icons.air,
+                            color: value['mq135_value'] < 50
+                                ? (sharedData.isNightMode
+                                    ? Colors.tealAccent
+                                    : Colors.orange)
+                                : Colors.red),
+                        Text(': ${value['mq135_value']}%'),
+                        const SizedBox(width: 10),
+                        Icon(Icons.local_fire_department_outlined,
+                            color: value['mq2_value'] < 50
+                                ? (sharedData.isNightMode
+                                    ? Colors.tealAccent
+                                    : Colors.orange)
+                                : Colors.red),
+                        Text(': ${value['mq2_value']}%'),
+                        const SizedBox(width: 10),
+                        Icon(Icons.healing_rounded,
+                            color: value['impact_detected'] == false ||
+                                    value['impact_detected'] == 0
+                                ? (sharedData.isNightMode
+                                    ? Colors.tealAccent
+                                    : Colors.orange)
+                                : Colors.red),
+                        Text(value['impact_detected'] == true ||
+                                value['impact_detected'] == 1
+                            ? ': IMPACT/FALL!!'
+                            : ': None'),
+                      ],
+                    ),
+                  );
+                } else {
+                  return ListTile(
+                      title: Text("${value['name']}'s Helmet status: Offline"));
+                }
               }).toList(),
             ],
-          )
-          // const SizedBox(height: 15)
+          ),
+          const SizedBox(height: 70)
         ])));
   }
 }

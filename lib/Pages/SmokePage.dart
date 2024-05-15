@@ -18,6 +18,32 @@ class _SmokePageState extends State<SmokePage> {
     return Material(
         child: Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Container(
+          height: 45,
+          padding: const EdgeInsets.all(5),
+          margin: const EdgeInsets.only(top: 5, bottom: 5, left: 50, right: 50),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: sharedData.isNightMode
+                  ? [Colors.teal.shade200, Colors.teal]
+                  : [Colors.orangeAccent, Colors.orange],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            sharedData.selectedName == ''
+                ? 'No Helmet Selected'
+                : "${sharedData.selectedName}'s Helmet",
+            style: const TextStyle(
+              fontFamily: "Madimi_One",
+              fontSize: 20,
+              color: Colors.white,
+            ),
+          ),
+        ),
         Expanded(
             flex: 2,
             child: Container(

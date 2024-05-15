@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
+import 'Pages/CameraPage.dart';
 import 'Pages/Dashboard.dart';
-import 'Pages/OverviewPage.dart';
 import 'Pages/Settings.dart';
 import 'Pages/SmokePage.dart';
 import 'Pages/TempPage.dart';
@@ -21,10 +21,11 @@ class _MyHomePageState extends State<MyHomePage> {
   late Map<String, dynamic> _responseData = {};
   List<String> selectedDates = [];
   int _currentIndex = 0;
+  final currentTime = DateTime.now();
 
   final _pages = const [
     Dashboard(),
-    OverviewPage(),
+    CameraPage(),
     TempPage(),
     SmokePage(),
     SettingsPage(),
@@ -37,25 +38,48 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _fetchData(); // Fetch data when the app starts
     _fetchDataPeriodically();
+    showCustomToast();
   }
 
   Future<void> _fetchData() async {
     final sharedData = Provider.of<SharedData>(context, listen: false);
     _responseData = sharedData.responseData;
-    final String userID = sharedData.selectedHelmID;
+    // bool isActive = false;
 
-    final response = await http
-        .get(Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'));
+    final String userID = sharedData.selectedHelmID;
     final users = await http
         .get(Uri.parse('https://flask-api-mu.vercel.app/get_all_users'));
-
-    if (response.statusCode == 200 && mounted) {
+    if (users.statusCode == 200 && mounted) {
+      final response = await http.get(
+          Uri.parse('https://flask-api-mu.vercel.app/get_userdata/$userID'));
       setState(() {
-        context.read<SharedData>().setResponseData(json.decode(response.body));
         context.read<SharedData>().setUsersData(json.decode(users.body));
+        context.read<SharedData>().setResponseData(json.decode(response.body));
       });
-      // print(json.decode(users.body));
 
+      sharedData.usersData.forEach((userId, userData) {
+        String input = userData['lastUpdated'];
+        List<String> chunks = [];
+        int startIndex = 0;
+        while (startIndex < input.length) {
+          int endIndex = startIndex + 23;
+          if (endIndex > input.length) {
+            endIndex = input.length;
+          }
+          chunks.add(input.substring(startIndex, endIndex));
+          startIndex = endIndex;
+        }
+        //---------------------------------------
+        DateTime lastUpdatedDateTime = DateTime.parse(chunks.first);
+// Get the current datetime and subtract one minute
+        DateTime oneMinuteAgo =
+            DateTime.now().subtract(const Duration(minutes: 1));
+// Compare the two dates
+        bool isActive = lastUpdatedDateTime.isAfter(oneMinuteAgo);
+        if (isActive) {
+          sharedData.selectedHelmID = userId;
+        }
+      });
       List<SmokeData> smokeDataList = [];
       List<TemperatureData> temperatureDataList = [];
       // Get the list of keys (timestamps) from the JSON response, excluding the "user_id" key
@@ -73,7 +97,6 @@ class _MyHomePageState extends State<MyHomePage> {
         final dateTimeB = DateTime.parse(b);
         return dateTimeB.compareTo(dateTimeA);
       });
-      // print(timestamps.first.toString());
       // Get the latest timestamp
       String latestTimestamp = timestamps.first;
 
@@ -83,8 +106,10 @@ class _MyHomePageState extends State<MyHomePage> {
           sensorData['temperature'].toDouble();
       context.read<SharedData>().mq2Value = sensorData['mq2_value'];
       context.read<SharedData>().mq135Value = sensorData['mq135_value'];
-      context.read<SharedData>()._impactDetected =
-          sensorData['impact_detected'];
+      if (sensorData['impact_detected'] == 1 ||
+          sensorData['impact_detected'] == true) {
+        context.read<SharedData>()._impactDetected = true;
+      }
       //...............TEMPERATURE.............................................................
       // Convert JSON data to _TemperatureData objects
       for (String timestamp in timestamps) {
@@ -107,14 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
         int mq135Value = _responseData[timestamp]['mq135_value'].toInt();
         smokeDataList.add(SmokeData(date, mq2Value, mq135Value));
       }
-
-      // Sort the list by date in descending order
       smokeDataList.sort((a, b) => b.date.compareTo(a.date));
-
-      // return smokeDataList
-      //     .take(49)
-      //     .toList(); // Return the latest 49 data points
-
       //.....................END SMOKE..................................................
       context
           .read<SharedData>()
@@ -125,8 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
       context.read<SharedData>().setSelectedDates(selectedDates);
       showCustomToast();
     } else {
-      throw Exception(
-          'Failed to load data. Status Code: ${response.statusCode}');
+      throw Exception('Failed to load data. Status Code: ${users.statusCode}');
     }
   }
 
@@ -137,20 +154,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _fetchDataPeriodically() {
-    _timer = Timer.periodic(const Duration(seconds: 10), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       _fetchData();
-      showCustomToast();
     });
-  }
-
-  int calculateMq135(int raw) {
-    double mq135Percent = ((raw - 300) / 3000) * 100;
-    return mq135Percent > 0.0 ? mq135Percent.toInt() : 0;
-  }
-
-  int calculateMq2(int raw) {
-    double mq2Percent = ((raw + 100) / 2000) * 100;
-    return mq2Percent > 0.0 ? mq2Percent.toInt() : 0;
   }
 
   void showCustomToast() {
@@ -162,27 +168,27 @@ class _MyHomePageState extends State<MyHomePage> {
     usersData.forEach((userId, userData) {
       bool hasAlert = false;
 
-      if (userData['impact_detected'] == true) {
+      if (userData['impact_detected'] == true ||
+          userData['impact_detected'] == 1) {
         alertsForUser.add('Impact/fall detected');
         hasAlert = true;
       }
 
       double temperature = userData['temperature'];
-      if (temperature > 36) {
+      if (temperature > 40) {
         alertsForUser.add('High temperature: $temperature');
         hasAlert = true;
       }
 
       double mq135Value = userData['mq135_value'];
-      if (mq135Value > 1800) {
-        alertsForUser
-            .add('Bad Air Quality: ${calculateMq135(mq135Value.toInt())}%');
+      if (mq135Value > 50) {
+        alertsForUser.add('Bad Air Quality: ${mq135Value}%');
         hasAlert = true;
       }
 
       double mq2Value = userData['mq2_value'];
-      if (mq2Value > 900) {
-        alertsForUser.add('Flammable Gas: ${calculateMq2(mq2Value.toInt())}%');
+      if (mq2Value > 50) {
+        alertsForUser.add('Flammable Gas: ${mq2Value}%');
         hasAlert = true;
       }
 
@@ -196,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 fontFamily: 'Lato',
                 color: sharedData.isNightMode ? Colors.white : Colors.black),
           ),
-          duration: const Duration(seconds: 30),
+          duration: const Duration(seconds: 3),
           backgroundColor: sharedData.isNightMode
               ? Colors.teal.shade900
               : Colors.orange.shade100,
@@ -205,8 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               sharedData.selectedHelmID = userId;
               sharedData.selectedName = userName;
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()));
+              _currentIndex = 0;
             },
             textColor: sharedData.isNightMode ? Colors.white : Colors.black,
           ),
@@ -227,6 +232,8 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // ElevatedButton(
+              //     onPressed: () => {showCustomToast()}, child: Text('x')),
               Image.asset(
                 context.watch<SharedData>().isNightMode
                     ? 'assets/ssh_logo_teal.png'
@@ -314,15 +321,22 @@ class SharedData with ChangeNotifier {
   bool _impactDetected = false;
   bool isOnline = false;
   double _temperature = 0;
-  int _mq2Value = 0;
-  int _mq135Value = 0;
-  String _selectedHelmID = '001';
-  String _selectedName = 'John Doe';
+  double _mq2Value = 0;
+  double _mq135Value = 0;
+  String _selectedHelmID = '';
+  String _selectedName = '';
   List<TemperatureData> _temperatureDataList = [];
   List<SmokeData> _smokeDataList = [];
   List<String> _selectedDates = [];
   Map<String, dynamic> _responseData = {};
   Map<String, dynamic> _usersData = {};
+  Map<String, dynamic> _activeUsers = {};
+
+  Map<String, dynamic> get activeUsers => _activeUsers;
+  void setActiveUsers(Map<String, dynamic> data) {
+    _activeUsers = data;
+    notifyListeners();
+  }
 
   bool get isNightMode => _isNightMode;
   set isNightMode(bool value) {
@@ -342,14 +356,14 @@ class SharedData with ChangeNotifier {
     notifyListeners();
   }
 
-  int get mq2Value => _mq2Value;
-  set mq2Value(int value) {
+  double get mq2Value => _mq2Value;
+  set mq2Value(double value) {
     _mq2Value = value;
     notifyListeners();
   }
 
-  int get mq135Value => _mq135Value;
-  set mq135Value(int value) {
+  double get mq135Value => _mq135Value;
+  set mq135Value(double value) {
     _mq135Value = value;
     notifyListeners();
   }
