@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -125,7 +125,8 @@ class _CameraPageState extends State<CameraPage> {
                       margin: EdgeInsets.only(top: 30, bottom: 40),
                       child: Transform(
                         alignment: Alignment.center,
-                        transform: Matrix4.rotationY(pi), // Flip vertically
+                        transform:
+                            Matrix4.rotationX(math.pi), // Flip vertically
                         child: WebViewWidget(
                           controller: _controller,
                         ),
